@@ -47,7 +47,7 @@ v:=false;
   // Check error
   if hDevice = INVALID_HANDLE_VALUE then
     begin
-    writeln('INVALID_HANDLE_VALUE for'+ drive);
+    writeln('INVALID_HANDLE_VALUE for '+ drive);
     exit;
     end;
 // note that we could use GetDiskFreeSpace which will work for most file systems
@@ -82,7 +82,7 @@ if DeviceIoControl(hDevice,FSCTL_GET_NTFS_VOLUME_DATA,
   //dwread:=0;
   //DeviceIoControl(hDevice,FSCTL_ALLOW_EXTENDED_DASD_IO,nil,0,nil,0,@dwread,nil);
   // Allocate memory and other initialization
-  GetMem(base, sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*40);
+  GetMem(base, sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*64);
   GetMem(lpinbuf, sizeof(STARTING_LCN_INPUT_BUFFER));
   GetMem(lpBytesReturned, sizeof(DWORD));
   try
@@ -90,7 +90,7 @@ if DeviceIoControl(hDevice,FSCTL_GET_NTFS_VOLUME_DATA,
   FSCTL_GET_VOLUME_BITMAP := CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 27, METHOD_NEITHER, FILE_ANY_ACCESS);
   // Make a query to device driver
   r := DeviceIOControl(hDevice, FSCTL_GET_VOLUME_BITMAP, lpinbuf, sizeof(STARTING_LCN_INPUT_BUFFER), base,
-                  sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*40, lpBytesReturned^, nil);
+                  sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*64, lpBytesReturned^, nil);
   //writeln('lpBytesReturned:'+inttostr(lpBytesReturned^));
   //writeln('StartingLcn:'+inttostr(base^.StartingLcn.QuadPart));
   //writeln('BitmapSize:'+inttostr(base^.BitmapSize.QuadPart));
@@ -146,7 +146,7 @@ for i := 0 to lpBytesReturned^ -1 do //we'll get one sector after the volume to 
           if v then writeln('used offset:'+inttostr(offset)+' size:'+inttostr(clustersize*8));
           if extent<>0 then
              begin
-             writeln('extent:'+inttostr(extent)+' @'+inttostr(offset-extent));
+             writeln('extent:'+inttostr(extent)+' bytes at offset '+inttostr(offset-extent));
              extent:=0;
              end;
         inc(offset,clustersize*8 );
@@ -169,7 +169,7 @@ for i := 0 to lpBytesReturned^ -1 do //we'll get one sector after the volume to 
               if v then writeln('used offset:'+inttostr(offset)+' size:'+inttostr(clustersize));
               if extent<>0 then
               begin
-              writeln('extent:'+inttostr(extent)+' @'+inttostr(offset-extent));
+              writeln('extent:'+inttostr(extent)+' bytes at offset '+inttostr(offset-extent));
               extent:=0;
               end;
             end//if odd(value shr j)
@@ -223,7 +223,7 @@ for i := 0 to lpBytesReturned^ -1 do //we'll get one sector after the volume to 
   dwread := 0;
   ret:=DeviceIoControl(hdevice,FSCTL_UNLOCK_VOLUME,nil,0,nil,0,dwread,nil);
   CloseHandle(hDevice);
-  FreeMem(base, sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*40);
+  FreeMem(base, sizeof(VOLUME_BITMAP_BUFFER)+1024*1024*64);
   FreeMem(lpinbuf, sizeof(STARTING_LCN_INPUT_BUFFER));
   FreeMem(lpBytesReturned, sizeof(DWORD));
   //
